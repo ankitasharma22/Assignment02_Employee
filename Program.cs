@@ -1,140 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-delegate string PrintMessage(string Message);
-namespace Assignment03
-{
-    class HelloWorld
-    {
-        //print exceptions, using delegate concept
-        public static string PrintException(string FinalMessage)
-        {
-            Console.WriteLine("{0} ", FinalMessage);
-            return FinalMessage;
-        }
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
+namespace Assignment02
+{
+    public class Program
+    {
+        static AccountDetails[] Clients = new AccountDetails[2];
         static void Main(string[] args)
         {
-            int userChoice = 0;
-            int tempId = 101;
+            Console.WriteLine("Enter input\n");
+             for (int i = 0; i < 2; i++)
+              {
+                AccountDetails accountDetails = new AccountDetails();
 
-            PrintMessage pm1 = new PrintMessage(PrintException);  //instance of delegate, passing method 'PrintException'
-
-            List<Employee> employees = new List<Employee>();
-            Console.WriteLine("Enter employee details \n");
-            Employee e1 = new Employee();
-            do
-            {
-                e1.employeeId = tempId;
-                Console.WriteLine("Employee ID-- {0}", e1.employeeId);
-                Console.WriteLine("Employee Name-- ");
-                e1.employeeName = Console.ReadLine();
-                Console.WriteLine("Qualification-- ");
-                e1.qualification = Console.ReadLine();
-                Console.WriteLine("Qualifications allowed: BE, BSC, BCA, BCom, MCom, CA-- ");
-
-                try
+                Console.Write("Account Number ");
+                Clients[i] = new AccountDetails();
+                Clients[i].AccountNumber = Convert.ToInt32(Console.ReadLine());
+                Console.Write("Amount ");
+                Clients[i].Amount = Convert.ToInt32(Console.ReadLine());
+                Console.Write("Account Holder ");
+                Clients[i].AccountHolder = Console.ReadLine();
+                Console.Write("Account Type ");
+                Clients[i].AccountType = Console.ReadLine();
+            }
+            Console.WriteLine("Enter your choice: 1. Display Your Account Details 2. Search by Account ID 3. Deposit 4. Withdraw");
+            int userChoice = Convert.ToInt32(Console.ReadLine());
+            
+                switch (userChoice)
                 {
-                    if (string.IsNullOrEmpty(e1.qualification))
+                    case 1:
+                        DisplayAccountDetails();
+                        break;
+                    case 2:
+                        SearchById(101);
+                        break;
+                    case 3:
+                        int UpdatedAmount1 = Deposit(1000, 101);
+                        Console.WriteLine("Updated amount {0}", UpdatedAmount1);
+                        break;
+                    case 4:
+                        int UpdatedAmount2 = Withdraw(1000, 101);
+                        Console.WriteLine("Updated amount {0}", UpdatedAmount2);
+                        break;
+                    default:
+                        Console.WriteLine("Invalid grade");
+                        break;
+                
+            }
+            Console.ReadKey(); 
+        }
+        public static void DisplayAccountDetails()
+        {
+            Console.WriteLine("Following shows the clients of XYZ Bank");
+            for (int i = 0; i < Clients.Length; i++)
+                Console.Write("-- Account Number -- Amount -- Account Holder -- Account Type -- {0} {1} {2} {3}", Clients[i].AccountNumber, Clients[i].Amount, Clients[i].AccountHolder, Clients[i].AccountType);
+        }
+
+        public static AccountDetails SearchById(int InputAccountNumber)
+        {
+            AccountDetails SearchOutput = new AccountDetails();
+            for (int i = 0; i < 2; i++)
+            {
+                if (Clients[i].AccountNumber == InputAccountNumber)
+                {
+                    SearchOutput.AccountNumber = Clients[i].AccountNumber;
+                    SearchOutput.Amount = Clients[i].Amount;
+                    SearchOutput.AccountHolder = Clients[i].AccountHolder;
+                    SearchOutput.AccountType = Clients[i].AccountType;
+                    break;
+                }
+            }
+            return SearchOutput;
+        }
+
+        public static int Deposit(int DepositAmount, int InputAccountNumber)
+        {
+            int IncrementedAmount = 0;
+            for (int i = 0; i < 2; i++)
+            {
+                if (Clients[i].AccountNumber == InputAccountNumber)
+                {
+                    IncrementedAmount = Clients[i].Amount + DepositAmount;
+                    break;
+                }
+            }
+            return IncrementedAmount;
+        }
+
+        public static int Withdraw(int WithdrawAmount, int InputAccountNumber)
+        {
+            int DecrementedAmount = 0;
+            for (int i = 0; i < 2; i++)
+            {
+                if (Clients[i].AccountNumber == InputAccountNumber)
+                {
+                    if (Clients[i].AccountType == "Saving" && Clients[i].Amount - WithdrawAmount < 1000)
+                        Console.WriteLine("Insufficient Balance");
+                    else if (Clients[i].AccountType == "Current " && Clients[i].Amount - WithdrawAmount < 0)
+                        Console.WriteLine("Insufficient Balance");
+                    else if (Clients[i].AccountType == "DMAT  " && Clients[i].Amount - WithdrawAmount < -10000)
+                        Console.WriteLine("Insufficient Balance");
+                    else
                     {
-                        Exception ex = new Exception();
-                        ex = new EmptyQualification();
-                        RecordException(ex);
-                        throw (ex);
+                        Clients[i].Amount = Clients[i].Amount - WithdrawAmount;
+                        DecrementedAmount = Clients[i].Amount;
                     }
-                    else if (!(e1.qualification == "BE" || e1.qualification == "BSC" || e1.qualification == "BCA" || e1.qualification == "BCom" || e1.qualification == "MCom" || e1.qualification == "CA"))
-                    {
-                        Exception ex = new Exception();
-                        ex = new QualificationException(e1.qualification);
-                        RecordException(ex);
-                        throw (ex);
-                    }
+                    break;
                 }
-                catch (QualificationException exe)
-                {
-                    pm1(exe.Message());
-                }
-                catch (EmptyQualification exe)
-                {
-                    pm1(exe.Message());
-                }
-
-                if (e1.qualification == "BE" || e1.qualification == "BSC" || e1.qualification == "BCA")
-                {
-                    e1.department = "IT";
-                    Console.WriteLine("Employee has been added to IT Department.");
-                }
-                else if (e1.qualification == "BCom" || e1.qualification == "MCom" || e1.qualification == "CA")
-                {
-                    e1.department = "Accounts";
-                    Console.WriteLine("Employee has been added to ACcounts Department.");
-                }
-
-                employees.Add(e1);
-                tempId++;
-                Console.WriteLine("Do you want to continue? Press 0 to Exit, any other digit to continue ");
-                userChoice = Convert.ToInt32(Console.ReadLine());
-            } while (userChoice != 0);
+            }
+            return DecrementedAmount;
         }
 
-        //To keep track of the exceptions thrown
-        public static void RecordException(Exception ex)
-        {
-            try
-            {
-                string filepath = @"C:\Ankita\Assignment03.txt";  //Text File Path
 
-                if (!File.Exists(filepath))
-                {
-                    File.Create(filepath).Dispose();
-
-                }
-                using (StreamWriter writer = new StreamWriter(filepath, true))
-                {
-                    writer.WriteLine("Message :" + ex.Message + "StackTrace :" + ex.StackTrace);
-                    writer.WriteLine("-----------------------------------------------------------------------------");
-                }
-            }
-            catch (Exception e)
-            {
-                ;
-            }
-            finally
-            {
-                Console.WriteLine(); //This will be executed everytime, will print a new line
-            }
-        }
-
-        //Exception for wrong Qualification
-        public class QualificationException : Exception
-        {
-            string exc;
-            public QualificationException(string invalid)
-            {
-                exc = invalid;
-            }
-            public string Message()
-            {
-                return "Invalid type of qualification";
-            }
-        }
-
-        //Exception for empty qualification
-        public class EmptyQualification : Exception
-        {
-            string exc;
-            public EmptyQualification() {; }
-            public string Message()
-            {
-                return "Qualification can't be empty";
-            }
-        }
-
-        //Class of employees
-        public class Employee
-        {
-            public string employeeName, qualification, department;
-            public int employeeId;
-        }
     }
+
+    public class AccountDetails
+    {
+        public int AccountNumber;
+        public int Amount;
+        public string AccountHolder;
+        public string AccountType;
+    }
+
+    
 }
